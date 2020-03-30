@@ -21,7 +21,7 @@ class SplittingError(Exception):
         super(SplittingError, self).__init__(message)
 
 
-def split_sentences(text, lang='auto', json=False):
+def split_sentences(text, proxies, lang='auto', json=False):
     if text is None:
         raise SplittingError('Text can\'t be be None.')
     if lang not in LANGUAGES.keys():
@@ -40,7 +40,7 @@ def split_sentences(text, lang='auto', json=False):
         },
     }
 
-    response = requests.post(BASE_URL, json=parameters).json()
+    response = requests.post(BASE_URL, json=parameters, proxies=proxies).json()
 
     if 'result' not in response:
         raise SplittingError('DeepL call resulted in a unknown result.')
@@ -60,7 +60,7 @@ class TranslationError(Exception):
         super(TranslationError, self).__init__(message)
 
 
-def translate(text, to_lang, from_lang='auto', json=False):
+def translate(text, to_lang, proxies, from_lang='auto', json=False):
     if text is None:
         raise TranslationError('Text can\'t be None.')
     if len(text) > 5000:
@@ -91,7 +91,7 @@ def translate(text, to_lang, from_lang='auto', json=False):
         },
     }
 
-    response = requests.post(BASE_URL, json=parameters).json()
+    response = requests.post(BASE_URL, json=parameters, proxies=proxies).json()
 
     if 'result' not in response:
         raise TranslationError('DeepL call resulted in a unknown result.')
