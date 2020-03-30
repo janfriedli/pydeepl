@@ -1,4 +1,15 @@
+from http import cookiejar
+import logging
 import requests
+
+
+class BlockAll(cookiejar.CookiePolicy):
+    return_ok = set_ok = domain_return_ok = path_return_ok = lambda self, *args, **kwargs: False
+    netscape = True
+    rfc2965 = hide_cookie2 = False
+
+
+logger = logging.getLogger()
 
 BASE_URL = 'https://www2.deepl.com/jsonrpc'
 
@@ -39,8 +50,9 @@ def split_sentences(text, proxies, lang='auto', json=False):
             },
         },
     }
-
-    response = requests.post(BASE_URL, json=parameters, proxies=proxies).json()
+    s = requests.Session()
+    s.cookies.set_policy(BlockAll())
+    response = s.post(BASE_URL, json=parameters, proxies=proxies).json()
 
     if 'result' not in response:
         raise SplittingError('DeepL call resulted in a unknown result.')
@@ -91,9 +103,13 @@ def translate(text, to_lang, proxies, from_lang='auto', json=False):
         },
     }
 
-    response = requests.post(BASE_URL, json=parameters, proxies=proxies).json()
+    s = requests.Session()
+    s.cookies.set_policy(BlockAll())
+
+    response = s.post(BASE_URL, json=parameters, proxies=proxies).json()
 
     if 'result' not in response:
+        logger.error('DeepL call resulted in a unknown result.' + repr(response))
         raise TranslationError('DeepL call resulted in a unknown result.')
 
     translations = response['result']['translations']
